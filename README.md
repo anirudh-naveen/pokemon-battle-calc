@@ -11,6 +11,8 @@ Competitive Pokémon damage depends on dozens of interacting factors: stats, nat
 - **Battle state you can see.** Weather and terrain animate the results panel. Status conditions animate the Pokémon (flames for burn, ice for freeze, "z"s for sleep). Side conditions draw animated rings around that Pokémon's card.
 - **Always current.** A scheduled pipeline detects each new Champions season (regulation) and updates the data and the live site automatically.
 
+<img width="1710" height="1005" alt="image" src="https://github.com/user-attachments/assets/1b0d292d-e6c4-491b-9ed9-d75f00b294aa" />
+
 ---
 
 ## Highlights
