@@ -9,7 +9,7 @@ import {ResultsPanel} from './components/ResultsPanel';
 import {championsData} from './engine/defaults';
 import {useCalc} from './state/store';
 
-/** Files in public/ live under the site's base path (e.g. /poke-battle-calc/ on GitHub Pages). */
+/** Files in public/ live under the site's base path (e.g. /pokemon-battle-calc/ on GitHub Pages). */
 const asset = (file: string) => `${import.meta.env.BASE_URL}${file}`;
 
 function ThemeToggle() {

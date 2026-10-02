@@ -2,7 +2,7 @@
 
 **A fast, visual damage calculator for Pokémon Champions, the official competitive Pokémon game, in Singles and Doubles.**
 
-[**▶ Live demo**](https://anirudh-naveen.github.io/poke-battle-calc/) · React · TypeScript · Vite · Tailwind CSS · Zustand · Vitest · GitHub Actions
+[**▶ Live demo**](https://anirudh-naveen.github.io/pokemon-battle-calc/) · React · TypeScript · Vite · Tailwind CSS · Zustand · Vitest · GitHub Actions
 
 Competitive Pokémon damage depends on dozens of interacting factors: stats, natures, abilities, items, weather, terrain, screens, critical hits, spread moves, status conditions and stat stages. Existing calculators expose all of them at once in dense forms. PokéBattleCalc keeps the full mechanics but organises them so a player can answer *"does this attack KO?"* at a glance:
 
@@ -81,7 +81,7 @@ npm install
 npm run dev      # http://localhost:5175
 npm test         # engine tests
 npm run data     # regenerate data for the current regulation
-npm run build    # production build (served under /poke-battle-calc/)
+npm run build    # production build (served under /pokemon-battle-calc/)
 ```
 
 To preview the production build exactly as GitHub Pages serves it:
@@ -90,14 +90,14 @@ To preview the production build exactly as GitHub Pages serves it:
 npm run build && npx vite preview --port 5176
 ```
 
-Then open http://localhost:5176/poke-battle-calc/.
+Then open http://localhost:5176/pokemon-battle-calc/.
 
 ## Deployment
 
 1. In the GitHub repo, open **Settings → Pages** and set **Source** to **GitHub Actions**.
-2. Push to `main`. The site publishes to `https://anirudh-naveen.github.io/poke-battle-calc/`.
+2. Push to `main`. The site publishes to `https://anirudh-naveen.github.io/pokemon-battle-calc/`.
 
-The weekly update job needs to push to `main`, so it fails if `main` has branch protection. If the repo is renamed, update `base` in `vite.config.ts`.
+The weekly update job needs to push to `main`, so it fails if `main` has branch protection. In CI the base path comes from the repo name, so renaming the repo needs no code change.
 
 ## Credits
 
