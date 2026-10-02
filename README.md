@@ -17,13 +17,13 @@ Competitive Pokémon damage depends on dozens of interacting factors: stats, nat
 
 ## Highlights
 
-### Accurate mechanics without reinventing them
+### Accurate mechanics
 The damage formula comes from [`@smogon/calc`](https://github.com/smogon/damage-calc), the battle-tested engine behind Pokémon Showdown's calculator. It models Champions-specific rules: Level 50, the **Stat Points** system (66 total, 32 per stat) that replaces EVs, and the new Mega Evolutions and abilities. A thin typed adapter ([`src/engine/calc.ts`](src/engine/calc.ts)) turns UI state into engine objects, so the app's own code focuses on data and UX rather than re-deriving hundreds of edge cases.
 
-### Measuring each modifier by recalculating without it
+### Measuring each modifier
 The engine reports a final number, not how much each factor contributed. To show tags like "Reflect ×0.67", the app recalculates each move with that one condition switched off and compares the results. Small rounding differences are snapped to the familiar game multipliers (×0.5, ×0.67, ×1.3, ×1.5). This works for indirect effects too, like Sand boosting Rock types' Special Defense, without hard-coding any rules.
 
-### Data pipeline that follows the live game
+### Auto-updating data pipeline
 [`scripts/build-data.ts`](scripts/build-data.ts) reads Pokémon Showdown's data and:
 - finds the **current regulation** (the newest active VGC Champions format) and loads that season's rules
 - builds each species' legal abilities and full learnset, following forms and pre-evolutions so Megas inherit their moves
@@ -33,7 +33,7 @@ The engine reports a final number, not how much each factor contributed. To show
 - **[`deploy.yml`](.github/workflows/deploy.yml)** runs the tests and publishes to GitHub Pages on every push to `main`.
 - **[`update-data.yml`](.github/workflows/update-data.yml)** runs weekly. It upgrades the data sources, regenerates the data for the current season, runs the tests and a build, then commits and redeploys only if something changed. Commits made by a workflow don't trigger other workflows, so it calls the deploy workflow directly as a reusable workflow.
 
-### Responsive layout that adapts to the space available
+### Responsive layout
 - **Container queries** let each Pokémon's column decide for itself whether its HP, status and boosts panel fits beside the card, or folds into it.
 - The same layout works from a 320px phone to a 1920px full-screen monitor with no horizontal scrolling and no cut-off text.
 - Phones held upright get a rotate-to-landscape prompt, and desktop users get a one-time full-screen suggestion that uses the Fullscreen API, with Safari support.
