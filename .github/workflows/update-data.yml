@@ -1,0 +1,76 @@
+name: Update Champions data
+
+# Checks weekly for a new Pokémon Champions season (regulation), balance patch or
+# mechanics fix in Pokémon Showdown / @smogon/calc. If the generated data changes and
+# the tests still pass, it commits the update to main and redeploys the site.
+on:
+  schedule:
+    - cron: '0 6 * * 1' # Mondays 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: update-data
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
+      sha: ${{ steps.commit.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Upgrade data sources to latest
+        run: |
+          npm install --save-dev pokemon-showdown@latest
+          npm install @smogon/calc@latest
+
+      - name: Regenerate Champions data
+        run: npm run data
+
+      - name: Verify
+        run: |
+          npm test
+          npm run build
+
+      - name: Commit if anything changed
+        id: commit
+        run: |
+          if git diff --quiet; then
+            echo "Data is already up to date."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          REG=$(node -p "require('./src/data/champions.json').regulation")
+          SD=$(node -p "require('./src/data/champions.json').sources.showdown")
+          CALC=$(node -p "require('./src/data/champions.json').sources.calc")
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json src/data/champions.json
+          git commit -m "Update Champions data: $REG (showdown $SD, calc $CALC)"
+          git push
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Champions data updated"
+            echo "- Regulation: **$REG**"
+            echo "- pokemon-showdown $SD, @smogon/calc $CALC"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    needs: update
+    if: needs.update.outputs.changed == 'true'
+    uses: ./.github/workflows/deploy.yml
+    with:
+      ref: ${{ needs.update.outputs.sha }}

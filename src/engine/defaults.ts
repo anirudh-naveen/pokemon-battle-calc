@@ -3,6 +3,11 @@ import {gen, toId} from './calc';
 import type {FieldState, PokemonState, SideConditions, StatsTable} from './types';
 
 export interface ChampionsData {
+  /** Season the data is for, e.g. "Reg M-B". */
+  regulation: string;
+  /** Full format name, e.g. "VGC 2026 Reg M-B". */
+  format: string;
+  sources: {showdown: string; calc: string};
   items: string[];
   species: Record<string, {abilities: string[]; moves: string[]}>;
 }

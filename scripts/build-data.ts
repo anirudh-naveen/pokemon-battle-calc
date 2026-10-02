@@ -1,18 +1,34 @@
 /**
- * Generates src/data/champions.json from Pokémon Showdown's `champions` mod.
+ * Generates src/data/champions.json from Pokémon Showdown's data for the current
+ * Pokémon Champions regulation (season).
  *
  * @smogon/calc already ships Champions species/move/item/ability data (gen 0),
- * so this only adds what the calc lacks: legal abilities and learnsets per species.
- * Run with `npm run data` after updating the `pokemon-showdown` devDependency.
+ * so this only adds what the calc lacks: legal abilities and learnsets per species,
+ * plus which regulation and package versions the data came from.
+ *
+ * Run with `npm run data`. The "Update Champions data" GitHub Action does this weekly
+ * with the latest pokemon-showdown and @smogon/calc, so new seasons are picked up.
  */
-import {writeFileSync} from 'node:fs';
+import {readFileSync, writeFileSync} from 'node:fs';
 import ps from 'pokemon-showdown';
 import calc from '@smogon/calc';
 
 const {Dex} = ps;
 const {Generations} = calc;
 
-const dex = Dex.mod('champions');
+/**
+ * The current season is the newest searchable official VGC format, e.g.
+ * "[Gen 9 Champions] VGC 2026 Reg M-B". Its `mod` holds that regulation's rules.
+ */
+const current = Dex.formats.all()
+  .filter(f => /^gen9championsvgc\d+reg[a-z]+$/.test(f.id) && f.searchShow)
+  .sort((a, b) => a.id.localeCompare(b.id))
+  .at(-1);
+if (!current) throw new Error('No current Champions VGC format found in pokemon-showdown');
+const regulation = current.name.match(/Reg [A-Z0-9-]+/)?.[0] ?? current.name.replace(/^\[.*?\]\s*/, '');
+console.log(`Current regulation: ${current.name} (mod: ${current.mod})`);
+
+const dex = Dex.mod(current.mod);
 const gen = Generations.get(0);
 const calcMoves = new Set([...gen.moves].map(m => m.name));
 const learnsets = dex.data.Learnsets as Record<string, {learnset?: Record<string, unknown>}>;
@@ -51,9 +67,15 @@ for (const s of gen.species) {
 const empty = Object.entries(species).filter(([, v]) => !v.moves.length).map(([k]) => k);
 if (empty.length) console.warn(`Species with no learnset: ${empty.join(', ')}`);
 
+const version = (pkg: string) =>
+  JSON.parse(readFileSync(new URL(`../node_modules/${pkg}/package.json`, import.meta.url), 'utf8')).version as string;
+
 const out = {
+  regulation,
+  format: current.name.replace(/^\[.*?\]\s*/, ''),
+  sources: {showdown: version('pokemon-showdown'), calc: version('@smogon/calc')},
   items: [...gen.items].map(i => i.name).sort(),
   species,
 };
 writeFileSync(new URL('../src/data/champions.json', import.meta.url), JSON.stringify(out));
-console.log(`Wrote ${Object.keys(species).length} species, ${out.items.length} items`);
+console.log(`Wrote ${regulation}: ${Object.keys(species).length} species, ${out.items.length} items`);

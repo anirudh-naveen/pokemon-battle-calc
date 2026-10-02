@@ -6,6 +6,7 @@ import {RotatePrompt} from './components/RotatePrompt';
 import {useFullscreen} from './hooks/useFullscreen';
 import {SideConditionsPanel} from './components/SideConditionsPanel';
 import {ResultsPanel} from './components/ResultsPanel';
+import {championsData} from './engine/defaults';
 import {useCalc} from './state/store';
 
 /** Files in public/ live under the site's base path (e.g. /poke-battle-calc/ on GitHub Pages). */
@@ -57,7 +58,9 @@ export default function App() {
         <img src={asset('Machamp.png')} alt="Machamp" className="size-10 object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.35)]" />
         <div className="min-w-0 flex-1">
           <h1 className="gold-text text-lg font-bold leading-tight tracking-tight">PokéBattleCalc</h1>
-          <p className="text-xs text-red-100/90">Pokémon Champions</p>
+          <p className="text-xs text-red-100/90" title={`Data for ${championsData.format}`}>
+            Pokémon Champions · <span className="font-semibold text-[var(--gold-light)]">{championsData.regulation}</span>
+          </p>
         </div>
         <div className="flex w-full items-center justify-end gap-1 sm:w-auto">
           <div className="mr-auto inline-flex rounded-lg bg-black/20 sm:mr-0 p-0.5 ring-1 ring-[var(--gold)]/50">
@@ -107,7 +110,7 @@ export default function App() {
       <RotatePrompt />
 
       <footer className="pb-4 text-center text-[11px] text-slate-400">
-        Damage engine: <a className="underline" href="https://github.com/smogon/damage-calc">@smogon/calc</a> · Data: Pokémon Showdown ·
+        Damage engine: <a className="underline" href="https://github.com/smogon/damage-calc">@smogon/calc</a> · Data: Pokémon Showdown {championsData.sources.showdown} ({championsData.format}) ·
         Pokémon is © Nintendo / Game Freak / The Pokémon Company.
       </footer>
     </div>
