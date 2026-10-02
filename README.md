@@ -27,6 +27,7 @@ The engine reports a final number, not how much each factor contributed. To show
 [`scripts/build-data.ts`](scripts/build-data.ts) reads Pokémon Showdown's data and:
 - finds the **current regulation** (the newest active VGC Champions format) and loads that season's rules
 - builds each species' legal abilities and full learnset, following forms and pre-evolutions so Megas inherit their moves
+- picks a **default build for each species from Smogon** ([`scripts/presets.ts`](scripts/presets.ts)): the hand-written analysis set if there is one (VGC first), otherwise the most-used ability, item, spread and moves from usage stats covering over a million battles. Every field is checked for legality, and a test checks each preset (334 of 358 species are covered)
 - records the regulation and the package versions the data came from, and produces identical output when nothing changed, so updates only happen when something real changed
 
 ### CI/CD and automatic season updates
@@ -54,7 +55,7 @@ The whole calc (both Pokémon, field and side conditions) is compressed into the
 
 | | |
 |---|---|
-| **Pokémon** | All Champions species and Megas, legal abilities, items, natures, Stat Point sliders with live Lv. 50 stats, learnset-filtered moves, a crit toggle per move |
+| **Pokémon** | All Champions species and Megas, loaded with a Smogon preset build, legal abilities, items, natures, Stat Point sliders with live Lv. 50 stats, learnset-filtered moves, a crit toggle per move |
 | **Battle state** | Drag-to-set HP bar with presets, 6 status conditions, −6 to +6 stat stages |
 | **Field** | Singles / Doubles (spread-move reduction), Sun / Rain / Sand / Snow, Electric / Grassy / Psychic / Misty Terrain |
 | **Side conditions** | Reflect, Light Screen, Aurora Veil, Tailwind, Helping Hand and Friend Guard (the last two only in Doubles) |

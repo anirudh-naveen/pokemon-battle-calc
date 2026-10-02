@@ -16,21 +16,7 @@ interface CalcState {
 }
 
 const initial = (): Pick<CalcState, 'pokemon' | 'field'> => ({
-  pokemon: [
-    {
-      ...defaultPokemon('Garchomp'),
-      nature: 'Jolly',
-      sp: {hp: 2, atk: 32, def: 0, spa: 0, spd: 0, spe: 32},
-      moves: ['Earthquake', 'Dragon Claw', 'Rock Slide', 'Stomping Tantrum'],
-    },
-    {
-      ...defaultPokemon('Incineroar'),
-      ability: 'Intimidate',
-      nature: 'Careful',
-      sp: {hp: 32, atk: 2, def: 16, spa: 0, spd: 16, spe: 0},
-      moves: ['Flare Blitz', 'Knock Off', 'Fake Out', 'Parting Shot'],
-    },
-  ],
+  pokemon: [defaultPokemon('Garchomp'), defaultPokemon('Incineroar')],
   field: defaultField(),
 });
 

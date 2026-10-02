@@ -1,6 +1,6 @@
 import {useMemo, useState} from 'react';
 import {gen, toCalcPokemon, toId} from '../engine/calc';
-import {SPECIES_NAMES, championsData, defaultAbility, defaultItem, defaultPokemon, speciesInfo} from '../engine/defaults';
+import {SPECIES_NAMES, championsData, defaultAbility, defaultItem, defaultPokemon, presetFor, speciesInfo} from '../engine/defaults';
 import {STAT_IDS, type PokemonState} from '../engine/types';
 import {useCalc, type SideIndex} from '../state/store';
 import {BattleStatePanel} from './BattleStatePanel';
@@ -13,6 +13,23 @@ import {Combobox} from './ui/Combobox';
 import {Card, Field, Select, TypeBadge} from './ui/primitives';
 
 const ALL_MOVES = [...gen.moves].map(m => m.name).filter(n => n !== '(No Move)').sort();
+
+/** Read-only note of which Smogon build the Pokémon was loaded with (choosing presets comes later). */
+function PresetLabel({species}: {species: string}) {
+  const preset = presetFor(species);
+  return (
+    <div className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+      {preset ? (
+        <>
+          <span className="font-semibold text-slate-600 dark:text-slate-300">{preset.name}</span>
+          <span> · {preset.source}</span>
+        </>
+      ) : (
+        <span>No Smogon preset yet</span>
+      )}
+    </div>
+  );
+}
 
 /** "Charizard-Mega-X" → "Mega X", "Garchomp-Mega" → "Mega". */
 function megaLabel(forme: string) {
@@ -102,6 +119,7 @@ export function PokemonCard({side, title}: {side: SideIndex; title: string}) {
               {pokemon.hpPercent < 100 ? `${Math.max(1, Math.floor((maxHP * pokemon.hpPercent) / 100))}/` : ''}{maxHP} HP
             </span>
           </div>
+          <PresetLabel species={pokemon.species} />
           <div className="h-1 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800" aria-hidden="true">
             <div className="h-full rounded-full transition-[width] duration-300" style={{width: `${pokemon.hpPercent}%`, backgroundColor: hpColor(pokemon.hpPercent)}} />
           </div>

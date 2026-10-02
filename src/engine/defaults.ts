@@ -10,6 +10,18 @@ export interface ChampionsData {
   sources: {showdown: string; calc: string};
   items: string[];
   species: Record<string, {abilities: string[]; moves: string[]}>;
+  /** One default build per species from Smogon (analysis set, else most-used build). */
+  presets: Record<string, Preset>;
+}
+
+export interface Preset {
+  name: string;
+  source: string;
+  ability: string;
+  item: string;
+  nature: string;
+  sp: StatsTable;
+  moves: string[];
 }
 export const championsData = data as ChampionsData;
 
@@ -42,17 +54,25 @@ export function defaultItem(name: string): string {
   return '';
 }
 
+export function presetFor(species: string): Preset | undefined {
+  return championsData.presets[species];
+}
+
+/** A fresh Pokémon, filled in from its Smogon preset when there is one. */
 export function defaultPokemon(species: string): PokemonState {
+  const preset = presetFor(species);
+  const moves = [...(preset?.moves ?? []), '', '', '', ''].slice(0, 4);
   return {
     species,
-    ability: defaultAbility(species),
-    item: defaultItem(species),
-    nature: 'Hardy',
-    sp: zeroStats(),
+    ability: preset?.ability || defaultAbility(species),
+    // Megas must hold their own stone, whatever the preset says.
+    item: species.includes('-Mega') ? defaultItem(species) || preset?.item || '' : preset?.item ?? defaultItem(species),
+    nature: preset?.nature ?? 'Hardy',
+    sp: preset ? {...preset.sp} : zeroStats(),
     boosts: zeroStats(),
     status: '',
     hpPercent: 100,
-    moves: ['', '', '', ''],
+    moves,
     crits: [false, false, false, false],
   };
 }
