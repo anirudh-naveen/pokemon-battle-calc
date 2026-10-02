@@ -8,6 +8,9 @@ import {SideConditionsPanel} from './components/SideConditionsPanel';
 import {ResultsPanel} from './components/ResultsPanel';
 import {useCalc} from './state/store';
 
+/** Files in public/ live under the site's base path (e.g. /poke-battle-calc/ on GitHub Pages). */
+const asset = (file: string) => `${import.meta.env.BASE_URL}${file}`;
+
 function ThemeToggle() {
   const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'));
   return (
@@ -22,7 +25,7 @@ function ThemeToggle() {
       }}
       className="grid size-8 place-items-center rounded-lg text-[var(--gold-light)] hover:bg-white/15"
     >
-      {dark ? <img src="Solrock.png" alt="Solrock" className="size-8 object-contain" /> : <img src="Lunatone.png" alt="Lunatone" className="size-8 object-contain" />}
+      {dark ? <img src={asset('Solrock.png')} alt="Solrock" className="size-8 object-contain" /> : <img src={asset('Lunatone.png')} alt="Lunatone" className="size-8 object-contain" />}
     </button>
   );
 }
@@ -51,7 +54,7 @@ export default function App() {
   return (
     <div className="mx-auto flex max-w-[120rem] flex-col gap-4 px-4 py-5 sm:px-6">
       <header className="champ-banner flex flex-wrap items-center gap-3 rounded-2xl px-4 py-3 text-white shadow-lg shadow-red-900/20">
-        <img src="Machamp.png" alt="Machamp" className="size-10 object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.35)]" />
+        <img src={asset('Machamp.png')} alt="Machamp" className="size-10 object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.35)]" />
         <div className="min-w-0 flex-1">
           <h1 className="gold-text text-lg font-bold leading-tight tracking-tight">PokéBattleCalc</h1>
           <p className="text-xs text-red-100/90">Pokémon Champions</p>
@@ -87,7 +90,7 @@ export default function App() {
         </div>
       </header>
 
-      <main className="grid items-start gap-4 lg:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,27rem)_minmax(0,1fr)] min-[1700px]:grid-cols-[minmax(0,1fr)_minmax(0,26rem)_minmax(0,1fr)]">
+      <main className="grid grid-cols-[minmax(0,1fr)] items-start gap-4 lg:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,27rem)_minmax(0,1fr)] min-[1700px]:grid-cols-[minmax(0,1fr)_minmax(0,26rem)_minmax(0,1fr)]">
         <div className="lg:col-span-2 xl:sticky xl:top-4 xl:order-2 xl:col-span-1"><ResultsPanel /></div>
         {/* @container: each side decides from its own width whether the HP/status panel fits beside the card. */}
         <div className="@container flex min-w-0 flex-col gap-4 xl:order-1">

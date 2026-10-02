@@ -1,4 +1,4 @@
-# Champions Damage Calc
+# PokéBattleCalc
 
 A clean damage calculator for **Pokémon Champions**, covering Singles and Doubles.
 
@@ -15,6 +15,23 @@ npm test         # engine tests (Vitest)
 npm run data     # regenerate src/data/champions.json from the pokemon-showdown package
 npm run build    # production build to dist/
 ```
+
+## Deploying to GitHub Pages
+
+Every push to `main` runs [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml). It installs dependencies, runs the tests, builds, and publishes `dist/` to
+**https://anirudh-naveen.github.io/poke-battle-calc/**.
+
+One-time setup: in the repo on GitHub, open **Settings → Pages** and set **Source** to **GitHub Actions**.
+
+To check the production build locally (served under `/poke-battle-calc/`, the same as on Pages):
+
+```bash
+npm run build && npx vite preview --port 5176
+```
+
+Then open http://localhost:5176/poke-battle-calc/.
+
+If the repo is renamed, update `base` in `vite.config.ts` to match.
 
 To pick up new Showdown data, update `pokemon-showdown` and `@smogon/calc`, then run `npm run data`.
 
