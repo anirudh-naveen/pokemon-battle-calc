@@ -20,7 +20,8 @@ export function toCalcPokemon(p: PokemonState): Pokemon {
 }
 
 export function toCalcField(f: FieldState, attackerIndex: 0 | 1): Field {
-  const side = (s: SideConditions) => ({...s});
+  // Helping Hand and Friend Guard come from an ally, so they only exist in Doubles.
+  const side = (s: SideConditions) => f.gameType === 'Doubles' ? {...s} : {...s, isHelpingHand: false, isFriendGuard: false};
   return new Field({
     gameType: f.gameType,
     weather: f.weather || undefined,
@@ -44,6 +45,23 @@ export interface MoveResult {
   /** 1 = OHKO, 2 = 2HKO, … ; 0 when no damage or unknown. */
   koHits: number;
   description: string;
+  /** Damage multiplier caused by the current weather / terrain (null if none or no effect). */
+  weatherMod: number | null;
+  terrainMod: number | null;
+  /** Multipliers from active side conditions (attacker's Helping Hand, defender's screens, …). */
+  sideMods: {key: keyof SideConditions; side: 0 | 1; mod: number}[];
+}
+
+/** Side conditions that can change damage, and which side they must be on to matter. */
+const ATTACKER_SIDE_MODS: (keyof SideConditions)[] = ['isHelpingHand'];
+const DEFENDER_SIDE_MODS: (keyof SideConditions)[] = ['isReflect', 'isLightScreen', 'isAuroraVeil', 'isFriendGuard'];
+
+const COMMON_RATIOS = [0, 0.25, 1 / 3, 0.5, 2 / 3, 0.75, 1.2, 1.25, 1.3, 4 / 3, 1.5, 2, 3, 4];
+
+/** Snap to a familiar multiplier: formula rounding makes e.g. 0.5× come out as 0.51. */
+function snapRatio(r: number) {
+  const near = COMMON_RATIOS.find(c => Math.abs(c - r) < 0.03);
+  return Math.round((near ?? r) * 100) / 100;
 }
 
 export function calcMove(
@@ -58,8 +76,29 @@ export function calcMove(
     ability: atk.ability, item: atk.item, species: atk.name,
     isCrit: attacker.crits[moveIndex],
   });
-  const result = calculate(gen, atk, def, move, toCalcField(field, attackerIndex));
+  const run = (f: FieldState) => calculate(gen, atk.clone(), def.clone(), move.clone(), toCalcField(f, attackerIndex));
+  const result = run(field);
   const [min, max] = result.range();
+  // Measure what weather/terrain actually did by recalculating without each one.
+  const modifier = (without: FieldState) => {
+    const baseMax = run(without).range()[1];
+    if (!baseMax || !max) return baseMax === max ? null : baseMax ? 0 : null;
+    const ratio = snapRatio(max / baseMax);
+    return ratio === 1 ? null : ratio;
+  };
+  const weatherMod = field.weather ? modifier({...field, weather: ''}) : null;
+  const terrainMod = field.terrain ? modifier({...field, terrain: ''}) : null;
+  const defenderIndex = attackerIndex === 0 ? 1 : 0;
+  const sideMods: MoveResult['sideMods'] = [];
+  for (const [side, keys] of [[attackerIndex, ATTACKER_SIDE_MODS], [defenderIndex, DEFENDER_SIDE_MODS]] as const) {
+    for (const key of keys) {
+      if (!field.sides[side][key]) continue;
+      const sides = [...field.sides] as FieldState['sides'];
+      sides[side] = {...sides[side], [key]: false};
+      const mod = modifier({...field, sides});
+      if (mod !== null) sideMods.push({key, side, mod});
+    }
+  }
   const maxHP = def.maxHP();
   let koText = '';
   let koHits = 0;
@@ -86,6 +125,9 @@ export function calcMove(
     koText,
     koHits,
     description,
+    weatherMod,
+    terrainMod,
+    sideMods,
   };
 }
 

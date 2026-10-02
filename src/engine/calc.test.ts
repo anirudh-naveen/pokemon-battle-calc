@@ -53,6 +53,33 @@ describe('damage', () => {
     expect(sun.maxDamage).toBeGreaterThan(base.maxDamage);
   });
 
+  it('reports the weather and terrain multipliers', () => {
+    const sun = calcMove(garchomp(), target(), {...defaultField(), weather: 'Sun'}, 0, 3)!;
+    expect(sun.weatherMod).toBeCloseTo(1.5, 1);
+    const grassy = calcMove(garchomp(), target(), {...defaultField(), terrain: 'Grassy'}, 0, 0)!;
+    expect(grassy.terrainMod).toBeCloseTo(0.5, 1);
+    // Rock Slide is unaffected by Sun.
+    expect(calcMove(garchomp(), target(), {...defaultField(), weather: 'Sun'}, 0, 2)!.weatherMod).toBeNull();
+  });
+
+  it('reports side-condition multipliers', () => {
+    const field = defaultField();
+    field.sides[1].isReflect = true;
+    expect(calcMove(garchomp(), target(), field, 0, 0)!.sideMods).toEqual([{key: 'isReflect', side: 1, mod: 0.5}]);
+    // Light Screen does nothing to a physical move.
+    field.sides[1] = {...field.sides[1], isReflect: false, isLightScreen: true};
+    expect(calcMove(garchomp(), target(), field, 0, 0)!.sideMods).toEqual([]);
+  });
+
+  it('ignores ally-only conditions in Singles', () => {
+    const field = defaultField();
+    field.sides[0].isHelpingHand = true;
+    const singles = calcMove(garchomp(), target(), field, 0, 1)!;
+    expect(singles.sideMods).toEqual([]);
+    const doubles = calcMove(garchomp(), target(), {...field, gameType: 'Doubles'}, 0, 1)!;
+    expect(doubles.sideMods).toEqual([{key: 'isHelpingHand', side: 0, mod: 1.5}]);
+  });
+
   it('handles Champions-only Mega abilities', () => {
     const meganium = {...defaultPokemon('Meganium-Mega'), moves: ['Weather Ball']};
     const r = calcMove(meganium, defaultPokemon('Tyranitar'), {...defaultField(), weather: 'Sand'}, 0, 0)!;

@@ -33,7 +33,7 @@ export function Select(props: SelectHTMLAttributes<HTMLSelectElement>) {
   return (
     <select
       {...props}
-      className={`${props.className?.includes('w-') ? '' : 'w-full'} min-w-0 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20 dark:border-slate-700 dark:bg-slate-900 ${props.className ?? ''}`}
+      className={`${props.className?.includes('w-') ? '' : 'w-full'} min-w-0 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm outline-none focus:border-red-400 focus:ring-2 focus:ring-red-400/20 dark:border-slate-700 dark:bg-slate-900 ${props.className ?? ''}`}
     />
   );
 }
@@ -47,7 +47,7 @@ export function Chip({active, onClick, children, title}: {active: boolean; onCli
       onClick={onClick}
       className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
         active
-          ? 'border-indigo-500 bg-indigo-500 text-white shadow-sm'
+          ? 'border-red-500 bg-red-500 text-white shadow-sm'
           : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300'
       }`}
     >
@@ -78,7 +78,7 @@ export function Segmented<T extends string>({value, options, onChange}: {value: 
 
 export function Card({children, className = ''}: {children: ReactNode; className?: string}) {
   return (
-    <section className={`rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 ${className}`}>
+    <section className={`gold-trim rounded-2xl p-4 shadow-sm shadow-amber-900/5 ${className}`}>
       {children}
     </section>
   );

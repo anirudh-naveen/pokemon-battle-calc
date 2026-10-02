@@ -57,7 +57,7 @@ export function Combobox({value, options, onChange, placeholder, renderOption, a
         aria-label={ariaLabel ?? placeholder}
         aria-expanded={open}
         aria-controls={id}
-        className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20 dark:border-slate-700 dark:bg-slate-900"
+        className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-red-400 focus:ring-2 focus:ring-red-400/20 dark:border-slate-700 dark:bg-slate-900"
         placeholder={open ? value || placeholder : placeholder}
         value={open ? query : value}
         onFocus={e => { setOpen(true); setActive(0); e.target.select(); }}
@@ -85,7 +85,7 @@ export function Combobox({value, options, onChange, placeholder, renderOption, a
               onMouseDown={e => { e.preventDefault(); commit(o); }}
               onMouseEnter={() => setActive(i)}
               className={`flex cursor-pointer items-center justify-between gap-2 px-2.5 py-1.5 ${
-                i === active ? 'bg-indigo-50 dark:bg-indigo-500/15' : ''
+                i === active ? 'bg-red-50 dark:bg-red-500/15' : ''
               } ${o === value ? 'font-semibold' : ''}`}
             >
               <span className={o ? '' : 'text-slate-400'}>{o || '(none)'}</span>

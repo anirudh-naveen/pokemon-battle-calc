@@ -4,6 +4,7 @@ import {SPECIES_NAMES, championsData, defaultAbility, defaultItem, defaultPokemo
 import {STAT_IDS, STAT_LABELS, type PokemonState, type StatusName} from '../engine/types';
 import {useCalc, type SideIndex} from '../state/store';
 import {MoveSlot} from './MoveSlot';
+import {SideAura} from './SideAura';
 import {SpEditor} from './SpEditor';
 import {Sprite} from './Sprite';
 import {Combobox} from './ui/Combobox';
@@ -40,6 +41,8 @@ export function PokemonCard({side, title}: {side: SideIndex; title: string}) {
   const pokemon = useCalc(s => s.pokemon[side]);
   const update = useCalc(s => s.updatePokemon);
   const setPokemon = useCalc(s => s.setPokemon);
+  const sideConditions = useCalc(s => s.field.sides[side]);
+  const doubles = useCalc(s => s.field.gameType === 'Doubles');
   const [showMore, setShowMore] = useState(false);
   const onChange = (patch: Partial<PokemonState>) => update(side, patch);
 
@@ -59,7 +62,10 @@ export function PokemonCard({side, title}: {side: SideIndex; title: string}) {
   return (
     <Card className="flex flex-col gap-4">
       <div className="flex items-start gap-3">
-        <Sprite species={pokemon.species} />
+        <div className="relative shrink-0">
+          <Sprite species={pokemon.species} />
+          <SideAura conditions={sideConditions} doubles={doubles} />
+        </div>
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">{title}</span>
@@ -144,7 +150,7 @@ export function PokemonCard({side, title}: {side: SideIndex; title: string}) {
         >
           <span className={`transition ${showMore ? 'rotate-90' : ''}`}>▸</span>
           Boosts, status & HP
-          {advancedActive && <span className="size-1.5 rounded-full bg-indigo-500" aria-label="modified" />}
+          {advancedActive && <span className="size-1.5 rounded-full bg-red-500" aria-label="modified" />}
         </button>
         {showMore && (
           <div className="mt-3 space-y-3">
@@ -174,7 +180,7 @@ export function PokemonCard({side, title}: {side: SideIndex; title: string}) {
                   <input
                     type="range" min={1} max={100} value={pokemon.hpPercent}
                     onChange={e => onChange({hpPercent: Number(e.target.value)})}
-                    className="h-1.5 w-full accent-indigo-500"
+                    className="h-1.5 w-full accent-red-500"
                     aria-label="Current HP percent"
                   />
                   <span className="w-9 text-right text-sm tabular-nums">{pokemon.hpPercent}%</span>

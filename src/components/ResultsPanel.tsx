@@ -1,7 +1,10 @@
 import {useMemo, useState} from 'react';
 import {calcMove, effectiveSpeed, type MoveResult} from '../engine/calc';
 import {useCalc, type SideIndex} from '../state/store';
+import {Ambience, ConditionsPanel, ModTag} from './ConditionsPanel';
+import {SIDE_THEMES, terrainTheme, weatherTheme} from './conditionThemes';
 import {Card, TypeBadge} from './ui/primitives';
+import type {FieldState} from '../engine/types';
 
 function koTone(r: MoveResult) {
   if (r.maxDamage === 0) return {bar: 'bg-slate-300', text: 'text-slate-400'};
@@ -10,7 +13,9 @@ function koTone(r: MoveResult) {
   return {bar: 'bg-emerald-500', text: 'text-emerald-600 dark:text-emerald-400'};
 }
 
-function ResultRow({result}: {result: MoveResult}) {
+function ResultRow({result, field}: {result: MoveResult; field: FieldState}) {
+  const wTheme = weatherTheme(field.weather);
+  const tTheme = terrainTheme(field.terrain);
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const tone = koTone(result);
@@ -42,8 +47,11 @@ function ResultRow({result}: {result: MoveResult}) {
               <div className={`absolute inset-y-0 left-0 ${tone.bar}`} style={{width: `${min}%`}} />
               <div className={`absolute inset-y-0 ${tone.bar} opacity-40`} style={{left: `${min}%`, width: `${max - min}%`}} />
             </div>
-            <div className={`mt-1 text-xs font-medium ${tone.text}`}>
-              {result.koText || 'Not a KO'}
+            <div className="mt-1 flex items-center gap-1.5">
+              <span className={`mr-auto truncate text-xs font-medium ${tone.text}`}>{result.koText || 'Not a KO'}</span>
+              {wTheme && result.weatherMod !== null && <ModTag theme={wTheme} mod={result.weatherMod} />}
+              {tTheme && result.terrainMod !== null && <ModTag theme={tTheme} mod={result.terrainMod} />}
+              {result.sideMods.map(m => <ModTag key={m.key} theme={SIDE_THEMES[m.key]} mod={m.mod} />)}
             </div>
           </>
         )}
@@ -60,7 +68,7 @@ function ResultRow({result}: {result: MoveResult}) {
                 setTimeout(() => setCopied(false), 1200);
               });
             }}
-            className="font-medium text-indigo-600 hover:underline dark:text-indigo-300"
+            className="font-medium text-red-600 hover:underline dark:text-red-300"
           >
             {copied ? 'Copied!' : 'Copy description'}
           </button>
@@ -95,7 +103,9 @@ export function ResultsPanel() {
   const faster = speeds[0] === speeds[1] ? null : speeds[0] > speeds[1] ? 0 : 1;
 
   return (
-    <Card className="flex flex-col gap-3">
+    <Card className="relative overflow-hidden">
+      <Ambience weather={field.weather} terrain={field.terrain} />
+      <div className="relative flex flex-col gap-3">
       <div className="flex items-center gap-2">
         <div className="grid flex-1 grid-cols-2 rounded-lg bg-slate-100 p-0.5 text-xs font-semibold dark:bg-slate-800">
           {([0, 1] as SideIndex[]).map(i => (
@@ -125,19 +135,24 @@ export function ResultsPanel() {
 
       {results.length ? (
         <ul className="-mx-1 space-y-0.5">
-          {results.map((r, i) => <ResultRow key={`${dir}-${i}-${r.move}`} result={r} />)}
+          {results.map((r, i) => <ResultRow key={`${dir}-${i}-${r.move}`} result={r} field={field} />)}
         </ul>
       ) : (
         <p className="py-8 text-center text-sm text-slate-400">Add moves to {attacker.species} to see damage.</p>
       )}
 
-      <div className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2 text-xs dark:bg-slate-800/60">
+      <div className="border-t border-slate-100 pt-3 dark:border-slate-800">
+        <ConditionsPanel />
+      </div>
+
+      <div className="flex items-center justify-between rounded-xl bg-slate-50/80 px-3 py-2 text-xs backdrop-blur-sm dark:bg-slate-800/60">
         <span className="font-medium text-slate-500 dark:text-slate-400">Speed</span>
         <span className="tabular-nums">
           <span className={faster === 0 ? 'font-semibold' : 'text-slate-500'}>{pokemon[0].species} {speeds[0]}</span>
           <span className="mx-1.5 text-slate-400">{faster === null ? '=' : faster === 0 ? '>' : '<'}</span>
           <span className={faster === 1 ? 'font-semibold' : 'text-slate-500'}>{speeds[1]} {pokemon[1].species}</span>
         </span>
+      </div>
       </div>
     </Card>
   );

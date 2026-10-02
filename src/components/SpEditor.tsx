@@ -27,7 +27,7 @@ export function SpEditor({pokemon, onChange}: Props) {
         <span className={left === 0 ? 'text-emerald-600 dark:text-emerald-400' : ''}>
           {left} / {SP_TOTAL} left
           {used > 0 && (
-            <button type="button" onClick={() => onChange({sp: {hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0}})} className="ml-2 normal-case text-indigo-500 hover:underline">
+            <button type="button" onClick={() => onChange({sp: {hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0}})} className="ml-2 normal-case text-red-500 hover:underline">
               reset
             </button>
           )}
@@ -53,7 +53,7 @@ export function SpEditor({pokemon, onChange}: Props) {
                 value={pokemon.sp[stat]}
                 onChange={e => setSp(stat, Number(e.target.value))}
                 aria-label={`${STAT_LABELS[stat]} Stat Points`}
-                className="h-1.5 w-full cursor-pointer accent-indigo-500"
+                className="h-1.5 w-full cursor-pointer accent-red-500"
               />
               <input
                 type="number"
@@ -62,7 +62,7 @@ export function SpEditor({pokemon, onChange}: Props) {
                 value={pokemon.sp[stat]}
                 onChange={e => setSp(stat, Number(e.target.value))}
                 aria-label={`${STAT_LABELS[stat]} Stat Points value`}
-                className="w-full rounded-md border border-slate-200 bg-transparent px-1 py-0.5 text-center tabular-nums outline-none focus:border-indigo-400 dark:border-slate-700"
+                className="w-full rounded-md border border-slate-200 bg-transparent px-1 py-0.5 text-center tabular-nums outline-none focus:border-red-400 dark:border-slate-700"
               />
               <span className="text-right font-semibold tabular-nums">{stats[stat]}</span>
             </div>
