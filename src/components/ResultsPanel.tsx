@@ -33,7 +33,7 @@ function ResultRow({result, field}: {result: MoveResult; field: FieldState}) {
         className="w-full px-3 py-2.5 text-left"
       >
         <div className="flex items-center gap-2">
-          <span className="truncate font-semibold">{result.move}</span>
+          <span className="min-w-0 font-semibold leading-tight">{result.move}</span>
           <TypeBadge type={result.type} small />
           <span className="ml-auto shrink-0 whitespace-nowrap text-sm font-semibold tabular-nums">
             {status ? <span className="font-normal text-slate-400">Status move</span>
@@ -47,8 +47,8 @@ function ResultRow({result, field}: {result: MoveResult; field: FieldState}) {
               <div className={`absolute inset-y-0 left-0 ${tone.bar}`} style={{width: `${min}%`}} />
               <div className={`absolute inset-y-0 ${tone.bar} opacity-40`} style={{left: `${min}%`, width: `${max - min}%`}} />
             </div>
-            <div className="mt-1 flex items-center gap-1.5">
-              <span className={`mr-auto truncate text-xs font-medium ${tone.text}`}>{result.koText || 'Not a KO'}</span>
+            <div className="mt-1 flex flex-wrap items-center gap-1.5">
+              <span className={`mr-auto text-xs font-medium ${tone.text}`}>{result.koText || 'Not a KO'}</span>
               {wTheme && result.weatherMod !== null && <ModTag theme={wTheme} mod={result.weatherMod} />}
               {tTheme && result.terrainMod !== null && <ModTag theme={tTheme} mod={result.terrainMod} />}
               {result.sideMods.map(m => <ModTag key={m.key} theme={SIDE_THEMES[m.key]} mod={m.mod} />)}
@@ -114,7 +114,7 @@ export function ResultsPanel() {
               type="button"
               aria-pressed={dir === i}
               onClick={() => setDir(i)}
-              className={`truncate rounded-md px-2 py-1.5 transition ${
+              className={`rounded-md px-2 py-1.5 leading-tight transition ${
                 dir === i ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white' : 'text-slate-500 dark:text-slate-400'
               }`}
             >

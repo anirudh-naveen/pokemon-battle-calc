@@ -1,26 +1,18 @@
 import {useMemo, useState} from 'react';
 import {gen, toCalcPokemon, toId} from '../engine/calc';
 import {SPECIES_NAMES, championsData, defaultAbility, defaultItem, defaultPokemon, speciesInfo} from '../engine/defaults';
-import {STAT_IDS, STAT_LABELS, type PokemonState, type StatusName} from '../engine/types';
+import {STAT_IDS, type PokemonState} from '../engine/types';
 import {useCalc, type SideIndex} from '../state/store';
+import {BattleStatePanel} from './BattleStatePanel';
+import {hpColor} from './conditionThemes';
+import {CardAura} from './CardAura';
 import {MoveSlot} from './MoveSlot';
-import {SideAura} from './SideAura';
 import {SpEditor} from './SpEditor';
 import {Sprite} from './Sprite';
 import {Combobox} from './ui/Combobox';
 import {Card, Field, Select, TypeBadge} from './ui/primitives';
 
 const ALL_MOVES = [...gen.moves].map(m => m.name).filter(n => n !== '(No Move)').sort();
-const NATURES = [...gen.natures].sort((a, b) => a.name.localeCompare(b.name));
-const STATUSES: [StatusName | '', string][] = [
-  ['', 'Healthy'], ['brn', 'Burned'], ['par', 'Paralyzed'], ['psn', 'Poisoned'],
-  ['tox', 'Badly poisoned'], ['slp', 'Asleep'], ['frz', 'Frozen'],
-];
-
-function natureLabel(n: (typeof NATURES)[number]) {
-  if (!n.plus || !n.minus || n.plus === n.minus) return `${n.name} (neutral)`;
-  return `${n.name} (+${STAT_LABELS[n.plus]} −${STAT_LABELS[n.minus]})`;
-}
 
 /** "Charizard-Mega-X" → "Mega X", "Garchomp-Mega" → "Mega". */
 function megaLabel(forme: string) {
@@ -35,6 +27,21 @@ function megaToggle(name: string): {label: string; target: string} | null {
   if (name.includes('-Mega')) return {label: 'Revert', target: species.baseSpecies ?? name.split('-Mega')[0]};
   const megas = (species.otherFormes ?? []).filter(f => f.includes('-Mega'));
   return megas.length ? {label: 'Mega Evolve', target: megas[0]} : null;
+}
+
+/**
+ * A Pokémon card plus its HP/status/boosts panel. The panel sits beside the card on the
+ * outer edge when the column is wide enough, and folds into the card otherwise.
+ */
+export function PokemonSide({side, title}: {side: SideIndex; title: string}) {
+  return (
+    <div className={`flex flex-col gap-4 @[40rem]:items-start ${side === 0 ? '@[40rem]:flex-row' : '@[40rem]:flex-row-reverse'}`}>
+      <Card className="hidden w-56 shrink-0 @[40rem]:block">
+        <BattleStatePanel side={side} />
+      </Card>
+      <PokemonCard side={side} title={title} />
+    </div>
+  );
 }
 
 export function PokemonCard({side, title}: {side: SideIndex; title: string}) {
@@ -60,12 +67,10 @@ export function PokemonCard({side, title}: {side: SideIndex; title: string}) {
     onChange({species: target, ability: defaultAbility(target), item: defaultItem(target)});
 
   return (
-    <Card className="flex flex-col gap-4">
+    <Card className="relative flex min-w-0 flex-1 flex-col gap-4">
+      <CardAura conditions={sideConditions} doubles={doubles} />
       <div className="flex items-start gap-3">
-        <div className="relative shrink-0">
-          <Sprite species={pokemon.species} />
-          <SideAura conditions={sideConditions} doubles={doubles} />
-        </div>
+        <Sprite species={pokemon.species} status={pokemon.status} />
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">{title}</span>
@@ -93,12 +98,17 @@ export function PokemonCard({side, title}: {side: SideIndex; title: string}) {
           />
           <div className="flex items-center gap-1.5">
             {species?.types.map(t => <TypeBadge key={t} type={t} />)}
-            <span className="ml-auto text-xs tabular-nums text-slate-500">{maxHP} HP</span>
+            <span className="ml-auto whitespace-nowrap text-xs tabular-nums text-slate-500">
+              {pokemon.hpPercent < 100 ? `${Math.max(1, Math.floor((maxHP * pokemon.hpPercent) / 100))}/` : ''}{maxHP} HP
+            </span>
+          </div>
+          <div className="h-1 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800" aria-hidden="true">
+            <div className="h-full rounded-full transition-[width] duration-300" style={{width: `${pokemon.hpPercent}%`, backgroundColor: hpColor(pokemon.hpPercent)}} />
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-2">
         <Field label="Ability">
           <Select value={pokemon.ability} onChange={e => onChange({ability: e.target.value})}>
             {abilities.map(a => <option key={a}>{a}</option>)}
@@ -106,11 +116,6 @@ export function PokemonCard({side, title}: {side: SideIndex; title: string}) {
         </Field>
         <Field label="Item">
           <Combobox value={pokemon.item} options={championsData.items} onChange={item => onChange({item})} allowEmpty placeholder="None" ariaLabel="Item" />
-        </Field>
-        <Field label="Nature" className="col-span-2 sm:col-span-1">
-          <Select value={pokemon.nature} onChange={e => onChange({nature: e.target.value})}>
-            {NATURES.map(n => <option key={n.name} value={n.name}>{natureLabel(n)}</option>)}
-          </Select>
         </Field>
       </div>
 
@@ -141,7 +146,8 @@ export function PokemonCard({side, title}: {side: SideIndex; title: string}) {
         </div>
       </div>
 
-      <div className="border-t border-slate-100 pt-3 dark:border-slate-800">
+      {/* Only when there's no room for the side panel (see PokemonSide). */}
+      <div className="border-t border-slate-100 pt-3 @[40rem]:hidden dark:border-slate-800">
         <button
           type="button"
           onClick={() => setShowMore(v => !v)}
@@ -149,46 +155,10 @@ export function PokemonCard({side, title}: {side: SideIndex; title: string}) {
           className="flex w-full items-center gap-2 text-xs font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
         >
           <span className={`transition ${showMore ? 'rotate-90' : ''}`}>▸</span>
-          Boosts, status & HP
+          HP, status & boosts
           {advancedActive && <span className="size-1.5 rounded-full bg-red-500" aria-label="modified" />}
         </button>
-        {showMore && (
-          <div className="mt-3 space-y-3">
-            <div className="grid grid-cols-5 gap-1.5">
-              {STAT_IDS.filter(s => s !== 'hp').map(stat => (
-                <Field key={stat} label={STAT_LABELS[stat]}>
-                  <Select
-                    value={pokemon.boosts[stat]}
-                    onChange={e => onChange({boosts: {...pokemon.boosts, [stat]: Number(e.target.value)}})}
-                    className={`px-1 text-center ${pokemon.boosts[stat] > 0 ? 'text-rose-500' : pokemon.boosts[stat] < 0 ? 'text-sky-500' : ''}`}
-                  >
-                    {Array.from({length: 13}, (_, k) => 6 - k).map(n => (
-                      <option key={n} value={n}>{n > 0 ? `+${n}` : n}</option>
-                    ))}
-                  </Select>
-                </Field>
-              ))}
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <Field label="Status">
-                <Select value={pokemon.status} onChange={e => onChange({status: e.target.value as StatusName | ''})}>
-                  {STATUSES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                </Select>
-              </Field>
-              <Field label={`Current HP · ${Math.max(1, Math.floor((maxHP * pokemon.hpPercent) / 100))}/${maxHP}`}>
-                <div className="flex items-center gap-2 py-1.5">
-                  <input
-                    type="range" min={1} max={100} value={pokemon.hpPercent}
-                    onChange={e => onChange({hpPercent: Number(e.target.value)})}
-                    className="h-1.5 w-full accent-red-500"
-                    aria-label="Current HP percent"
-                  />
-                  <span className="w-9 text-right text-sm tabular-nums">{pokemon.hpPercent}%</span>
-                </div>
-              </Field>
-            </div>
-          </div>
-        )}
+        {showMore && <div className="mt-3"><BattleStatePanel side={side} /></div>}
       </div>
     </Card>
   );

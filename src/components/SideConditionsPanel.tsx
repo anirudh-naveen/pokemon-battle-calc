@@ -22,9 +22,9 @@ function Tile({theme, active, onClick}: {theme: SideTheme; active: boolean; onCl
       {active && <Particles kind={theme.particles} />}
       <div className="relative flex items-center gap-2">
         <Icon size={18} className={active ? '' : theme.accent} />
-        <span className="truncate text-sm font-semibold">{theme.label}</span>
+        <span className="text-sm font-semibold leading-tight">{theme.label}</span>
       </div>
-      <div className={`relative mt-0.5 truncate text-[11px] ${active ? 'opacity-90' : 'text-slate-500 dark:text-slate-400'}`}>
+      <div className={`relative mt-0.5 text-[11px] leading-snug ${active ? 'opacity-90' : 'text-slate-500 dark:text-slate-400'}`}>
         {theme.effect}
       </div>
     </button>
@@ -41,11 +41,11 @@ export function SideConditionsPanel({side}: {side: SideIndex}) {
 
   return (
     <Card>
-      <div className="mb-2 flex items-baseline justify-between text-[11px] font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+      <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-3 text-[11px] font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
         <span>{species}'s side</span>
         {!doubles && <span className="normal-case tracking-normal text-slate-400">Ally effects appear in Doubles</span>}
       </div>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-2 2xl:grid-cols-3">
+      <div className="grid grid-cols-2 gap-2 @[34rem]:grid-cols-3">
         {keys.map(k => (
           <Tile key={k} theme={SIDE_THEMES[k]} active={conditions[k]} onClick={() => toggleSide(side, k)} />
         ))}

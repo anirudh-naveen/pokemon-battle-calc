@@ -1,6 +1,13 @@
 import {gen, toCalcPokemon, toId} from '../engine/calc';
 import {SP_MAX, SP_TOTAL, STAT_IDS, STAT_LABELS, type PokemonState, type StatID} from '../engine/types';
 
+const NATURES = [...gen.natures].sort((a, b) => a.name.localeCompare(b.name));
+
+function natureLabel(n: (typeof NATURES)[number]) {
+  if (!n.plus || !n.minus || n.plus === n.minus) return `${n.name} (neutral)`;
+  return `${n.name} (+${STAT_LABELS[n.plus]} −${STAT_LABELS[n.minus]})`;
+}
+
 interface Props {
   pokemon: PokemonState;
   onChange: (patch: Partial<PokemonState>) => void;
@@ -22,9 +29,20 @@ export function SpEditor({pokemon, onChange}: Props) {
 
   return (
     <div>
-      <div className="mb-1.5 flex items-center justify-between text-[11px] font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+      <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
         <span>Stat Points</span>
-        <span className={left === 0 ? 'text-emerald-600 dark:text-emerald-400' : ''}>
+        <label className="flex items-center gap-1.5 normal-case tracking-normal">
+          <span className="sr-only">Nature</span>
+          <select
+            value={pokemon.nature}
+            onChange={e => onChange({nature: e.target.value})}
+            aria-label="Nature"
+            className="rounded-md border border-slate-200 bg-white/70 px-1.5 py-0.5 text-xs font-semibold text-slate-700 outline-none focus:border-red-400 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-200"
+          >
+            {NATURES.map(n => <option key={n.name} value={n.name}>{natureLabel(n)}</option>)}
+          </select>
+        </label>
+        <span className={`ml-auto whitespace-nowrap ${left === 0 ? 'text-emerald-600 dark:text-emerald-400' : ''}`}>
           {left} / {SP_TOTAL} left
           {used > 0 && (
             <button type="button" onClick={() => onChange({sp: {hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0}})} className="ml-2 normal-case text-red-500 hover:underline">

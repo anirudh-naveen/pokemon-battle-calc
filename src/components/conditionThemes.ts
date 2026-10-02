@@ -1,5 +1,5 @@
 import type {ComponentType, SVGProps} from 'react';
-import type {SideConditions, Terrain, Weather} from '../engine/types';
+import type {SideConditions, StatusName, Terrain, Weather} from '../engine/types';
 import {
   AuroraIcon, ElectricIcon, FriendGuardIcon, GrassyIcon, HelpingHandIcon, LightScreenIcon, MistyIcon,
   PsychicIcon, RainIcon, ReflectIcon, SandIcon, SnowIcon, SunIcon, TailwindIcon,
@@ -7,7 +7,8 @@ import {
 
 export type ParticleKind =
   | 'sun' | 'rain' | 'sand' | 'snow' | 'electric' | 'grassy' | 'psychic' | 'misty'
-  | 'reflect' | 'lightscreen' | 'aurora' | 'tailwind' | 'helpinghand' | 'friendguard';
+  | 'reflect' | 'lightscreen' | 'aurora' | 'tailwind' | 'helpinghand' | 'friendguard'
+  | 'burn' | 'paralysis' | 'poison' | 'toxic' | 'sleep' | 'freeze';
 
 export interface ConditionTheme {
   label: string;
@@ -114,3 +115,27 @@ export const SIDE_THEMES: Record<keyof SideConditions, SideTheme> = {
     accent: 'text-pink-500', color: '#ec4899',
   },
 };
+
+export interface StatusTheme {
+  label: string;
+  /** What the status does, shown as a tooltip. */
+  effect: string;
+  particles: ParticleKind;
+  color: string;
+  /** Classes for the selected chip. */
+  active: string;
+}
+
+export const STATUS_THEMES: Record<StatusName, StatusTheme> = {
+  brn: {label: 'Burn', effect: 'Physical damage ×0.5, loses 1/16 HP each turn', particles: 'burn', color: '#f97316', active: 'bg-gradient-to-br from-amber-400 via-orange-500 to-red-600 text-white'},
+  par: {label: 'Paralysis', effect: 'Speed ×0.5, may be fully paralyzed', particles: 'paralysis', color: '#eab308', active: 'bg-gradient-to-br from-yellow-200 via-yellow-400 to-amber-500 text-slate-900'},
+  psn: {label: 'Poison', effect: 'Loses 1/8 HP each turn', particles: 'poison', color: '#a855f7', active: 'bg-gradient-to-br from-fuchsia-400 via-purple-500 to-violet-700 text-white'},
+  tox: {label: 'Toxic', effect: 'Loses increasing HP each turn', particles: 'toxic', color: '#7e22ce', active: 'bg-gradient-to-br from-purple-600 via-violet-800 to-slate-900 text-white'},
+  slp: {label: 'Sleep', effect: 'Can’t move for a few turns', particles: 'sleep', color: '#818cf8', active: 'bg-gradient-to-br from-indigo-300 via-indigo-500 to-slate-700 text-white'},
+  frz: {label: 'Freeze', effect: 'Can’t move until thawed', particles: 'freeze', color: '#22d3ee', active: 'bg-gradient-to-br from-cyan-100 via-sky-300 to-blue-500 text-slate-900'},
+};
+
+/** Game-style HP bar colour: green above half, yellow above a fifth, then red. */
+export function hpColor(percent: number) {
+  return percent > 50 ? '#22c55e' : percent > 20 ? '#eab308' : '#ef4444';
+}

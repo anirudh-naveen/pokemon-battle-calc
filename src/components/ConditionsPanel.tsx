@@ -21,7 +21,7 @@ function Tile({theme, active, onClick}: {theme: ConditionTheme; active: boolean;
         <Icon size={18} className={active ? '' : theme.accent} />
         <span className="text-sm font-semibold">{theme.label}</span>
       </div>
-      <div className={`relative mt-0.5 truncate text-[11px] ${active ? 'opacity-90' : 'text-slate-500 dark:text-slate-400'}`}>
+      <div className={`relative mt-0.5 text-[11px] leading-snug ${active ? 'opacity-90' : 'text-slate-500 dark:text-slate-400'}`}>
         {theme.effect}
       </div>
     </button>
