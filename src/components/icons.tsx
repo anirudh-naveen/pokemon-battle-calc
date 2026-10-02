@@ -117,3 +117,15 @@ export const FriendGuardIcon = (p: P) => (
     <path d="M12 15.5s-3.5-2-3.5-4.3A1.8 1.8 0 0 1 12 10a1.8 1.8 0 0 1 3.5 1.2c0 2.3-3.5 4.3-3.5 4.3Z" />
   </Icon>
 );
+
+export const ExpandIcon = (p: P) => (
+  <Icon {...p}>
+    <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />
+  </Icon>
+);
+
+export const CollapseIcon = (p: P) => (
+  <Icon {...p}>
+    <path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" />
+  </Icon>
+);

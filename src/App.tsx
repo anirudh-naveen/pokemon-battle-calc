@@ -1,5 +1,8 @@
 import {useState} from 'react';
+import {FullscreenPrompt} from './components/FullscreenPrompt';
+import {CollapseIcon, ExpandIcon} from './components/icons';
 import {PokemonCard} from './components/PokemonCard';
+import {useFullscreen} from './hooks/useFullscreen';
 import {SideConditionsPanel} from './components/SideConditionsPanel';
 import {ResultsPanel} from './components/ResultsPanel';
 import {useCalc} from './state/store';
@@ -19,6 +22,22 @@ function ThemeToggle() {
       className="grid size-8 place-items-center rounded-lg text-[var(--gold-light)] hover:bg-white/15"
     >
       {dark ? <img src="Solrock.png" alt="Solrock" className="size-8 object-contain" /> : <img src="Lunatone.png" alt="Lunatone" className="size-8 object-contain" />}
+    </button>
+  );
+}
+
+function FullscreenButton() {
+  const {isFullscreen, supported, toggle} = useFullscreen();
+  if (!supported) return null;
+  return (
+    <button
+      type="button"
+      onClick={() => void toggle()}
+      aria-label={isFullscreen ? 'Exit full screen' : 'Enter full screen'}
+      title={isFullscreen ? 'Exit full screen' : 'Full screen'}
+      className="hidden size-8 place-items-center rounded-lg text-[var(--gold-light)] hover:bg-white/15 [@media(pointer:fine)]:grid"
+    >
+      {isFullscreen ? <CollapseIcon size={18} /> : <ExpandIcon size={18} />}
     </button>
   );
 }
@@ -62,6 +81,7 @@ export default function App() {
           >
             {copied ? 'Link copied' : 'Share'}
           </button>
+          <FullscreenButton />
           <ThemeToggle />
         </div>
       </header>
@@ -77,6 +97,8 @@ export default function App() {
           <SideConditionsPanel side={1} />
         </div>
       </main>
+
+      <FullscreenPrompt />
 
       <footer className="pb-4 text-center text-[11px] text-slate-400">
         Damage engine: <a className="underline" href="https://github.com/smogon/damage-calc">@smogon/calc</a> · Data: Pokémon Showdown ·
