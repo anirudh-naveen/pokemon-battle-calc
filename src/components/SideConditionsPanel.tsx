@@ -2,6 +2,7 @@ import type {SideConditions} from '../engine/types';
 import {useCalc, type SideIndex} from '../state/store';
 import {SIDE_THEMES, type SideTheme} from './conditionThemes';
 import {Particles} from './Particles';
+import {Collapsible} from './ui/Collapsible';
 import {Card} from './ui/primitives';
 
 const KEYS = Object.keys(SIDE_THEMES) as (keyof SideConditions)[];
@@ -39,17 +40,23 @@ export function SideConditionsPanel({side}: {side: SideIndex}) {
   const toggleSide = useCalc(s => s.toggleSide);
   const keys = KEYS.filter(k => doubles || !SIDE_THEMES[k].doublesOnly);
 
+  const active = keys.filter(k => conditions[k]);
+
   return (
     <Card>
-      <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-3 text-[11px] font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
-        <span>{species}'s side</span>
-        {!doubles && <span className="normal-case tracking-normal text-slate-400">Ally effects appear in Doubles</span>}
-      </div>
-      <div className="grid grid-cols-2 gap-2 @[34rem]:grid-cols-3">
-        {keys.map(k => (
-          <Tile key={k} theme={SIDE_THEMES[k]} active={conditions[k]} onClick={() => toggleSide(side, k)} />
-        ))}
-      </div>
+      <Collapsible
+        title={`${species}'s side`}
+        storageKey={`side-conditions-${side}`}
+        modified={active.length > 0}
+        extra={!doubles && <span className="ml-auto normal-case tracking-normal text-slate-400">Ally effects appear in Doubles</span>}
+        summary={active.length ? active.map(k => SIDE_THEMES[k].label).join(' · ') : 'No side conditions active'}
+      >
+        <div className="grid grid-cols-2 gap-2 @[34rem]:grid-cols-3">
+          {keys.map(k => (
+            <Tile key={k} theme={SIDE_THEMES[k]} active={conditions[k]} onClick={() => toggleSide(side, k)} />
+          ))}
+        </div>
+      </Collapsible>
     </Card>
   );
 }

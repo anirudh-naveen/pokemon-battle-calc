@@ -1,14 +1,15 @@
-import {useMemo, useState} from 'react';
+import {useMemo} from 'react';
 import {gen, toCalcPokemon, toId} from '../engine/calc';
 import {SPECIES_NAMES, championsData, defaultAbility, defaultItem, defaultPokemon, presetFor, speciesInfo} from '../engine/defaults';
-import {STAT_IDS, type PokemonState} from '../engine/types';
+import {STAT_IDS, STAT_LABELS, type PokemonState} from '../engine/types';
 import {useCalc, type SideIndex} from '../state/store';
 import {BattleStatePanel} from './BattleStatePanel';
-import {hpColor} from './conditionThemes';
+import {STATUS_THEMES, hpColor} from './conditionThemes';
 import {CardAura} from './CardAura';
 import {MoveSlot} from './MoveSlot';
 import {SpEditor} from './SpEditor';
 import {Sprite} from './Sprite';
+import {Collapsible} from './ui/Collapsible';
 import {Combobox} from './ui/Combobox';
 import {Card, Field, Select, TypeBadge} from './ui/primitives';
 
@@ -67,7 +68,6 @@ export function PokemonCard({side, title}: {side: SideIndex; title: string}) {
   const setPokemon = useCalc(s => s.setPokemon);
   const sideConditions = useCalc(s => s.field.sides[side]);
   const doubles = useCalc(s => s.field.gameType === 'Doubles');
-  const [showMore, setShowMore] = useState(false);
   const onChange = (patch: Partial<PokemonState>) => update(side, patch);
 
   const species = gen.species.get(toId(pokemon.species));
@@ -79,6 +79,11 @@ export function PokemonCard({side, title}: {side: SideIndex; title: string}) {
   const mega = megaToggle(pokemon.species);
   const megaForms = species?.name.includes('-Mega') ? [] : (species?.otherFormes ?? []).filter(f => f.includes('-Mega'));
   const advancedActive = pokemon.status || pokemon.hpPercent < 100 || STAT_IDS.some(s => pokemon.boosts[s]);
+  const battleSummary = [
+    `${pokemon.hpPercent}% HP`,
+    pokemon.status ? STATUS_THEMES[pokemon.status].label : 'Healthy',
+    ...STAT_IDS.filter(s => pokemon.boosts[s]).map(s => `${pokemon.boosts[s] > 0 ? '+' : ''}${pokemon.boosts[s]} ${STAT_LABELS[s]}`),
+  ].join(' · ');
 
   const changeForme = (target: string) =>
     onChange({species: target, ability: defaultAbility(target), item: defaultItem(target)});
@@ -137,7 +142,7 @@ export function PokemonCard({side, title}: {side: SideIndex; title: string}) {
         </Field>
       </div>
 
-      <SpEditor pokemon={pokemon} onChange={onChange} />
+      <SpEditor side={side} pokemon={pokemon} onChange={onChange} />
 
       <div>
         <div className="mb-1.5 text-[11px] font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">Moves</div>
@@ -166,17 +171,14 @@ export function PokemonCard({side, title}: {side: SideIndex; title: string}) {
 
       {/* Only when there's no room for the side panel (see PokemonSide). */}
       <div className="border-t border-slate-100 pt-3 @[40rem]:hidden dark:border-slate-800">
-        <button
-          type="button"
-          onClick={() => setShowMore(v => !v)}
-          aria-expanded={showMore}
-          className="flex w-full items-center gap-2 text-xs font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+        <Collapsible
+          title="HP, status & boosts"
+          storageKey={`battle-state-${side}`}
+          modified={!!advancedActive}
+          summary={battleSummary}
         >
-          <span className={`transition ${showMore ? 'rotate-90' : ''}`}>▸</span>
-          HP, status & boosts
-          {advancedActive && <span className="size-1.5 rounded-full bg-red-500" aria-label="modified" />}
-        </button>
-        {showMore && <div className="mt-3"><BattleStatePanel side={side} /></div>}
+          <BattleStatePanel side={side} />
+        </Collapsible>
       </div>
     </Card>
   );
